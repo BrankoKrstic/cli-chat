@@ -3,7 +3,7 @@ use tokio_util::codec::{Decoder, Encoder};
 
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum ChatFrameTag {
+pub enum ChatFrameTag {
     Message = 0,
     NameChange = 1,
     Connect = 2,
@@ -11,8 +11,8 @@ enum ChatFrameTag {
 }
 #[derive(Debug, Clone)]
 pub struct ChatFrame {
-    tag: ChatFrameTag,
-    payload: String,
+    pub tag: ChatFrameTag,
+    pub payload: String,
 }
 
 pub struct ChatFrameCodec;

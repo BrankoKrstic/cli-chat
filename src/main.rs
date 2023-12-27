@@ -1,37 +1,46 @@
-use futures_util::StreamExt;
+use futures_util::{SinkExt, StreamExt};
 use rust_chat::codec::ChatFrameCodec;
-use std::error::Error;
+use rust_chat::message::{Message, MessagePayload};
+use rust_chat::ChatResult;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{broadcast, mpsc};
 use tokio_util::codec::Framed;
 
-pub type ChatError = Box<dyn Error + Send + Sync + 'static>;
-type ChatResult<T> = Result<T, ChatError>;
-
-#[derive(Debug, Clone)]
-enum Message {
-    Connected,
-    Disconnected,
-    Message,
-}
-
 async fn handle_connection(
     socket: TcpStream,
     addr: SocketAddr,
     message_sender: mpsc::Sender<Message>,
-    broadcast_receiver: broadcast::Receiver<Message>,
+    mut broadcast_receiver: broadcast::Receiver<Message>,
 ) -> ChatResult<()> {
-    message_sender.send(Message::Connected).await?;
+    message_sender
+        .send(Message::new(addr, MessagePayload::Connected))
+        .await?;
     let mut stream = Framed::new(socket, ChatFrameCodec);
+    loop {
+        tokio::select! {
+            msg = stream.next() => {
+                if let Ok(msg) = msg.unwrap() {
+                    message_sender.send(Message::new(addr, msg.into())).await?;
+                }
+            }
+            msg = broadcast_receiver.recv() => {
+                let msg = msg?;
+                if msg.sender == addr { continue; }
+                stream.send(msg.payload.into()).await?;
+            }
 
-    while let Some(msg) = stream.next().await {}
-    Ok(())
+        }
+    }
 }
 async fn handle_broadcast(
-    message_receiver: mpsc::Receiver<Message>,
+    mut message_receiver: mpsc::Receiver<Message>,
     broadcast: broadcast::Sender<Message>,
-) {
+) -> ChatResult<()> {
+    while let Some(msg) = message_receiver.recv().await {
+        let _ = broadcast.send(msg)?;
+    }
+    Ok(())
 }
 
 #[tokio::main]
