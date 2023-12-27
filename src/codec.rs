@@ -10,12 +10,12 @@ enum ChatFrameTag {
     Disconnect = 3,
 }
 #[derive(Debug, Clone)]
-struct ChatFrame {
+pub struct ChatFrame {
     tag: ChatFrameTag,
     payload: String,
 }
 
-struct ChatFrameCodec;
+pub struct ChatFrameCodec;
 
 const MAX: usize = 8 * 1024 * 1024;
 
