@@ -216,6 +216,7 @@ dependencies = [
 name = "rust-chat"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "tokio",
  "tokio-util",
 ]
