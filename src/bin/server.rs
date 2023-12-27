@@ -26,6 +26,7 @@ async fn handle_connection(
             }
             msg = broadcast_receiver.recv() => {
                 let msg = msg?;
+                println!("Message received: {:?}", msg);
                 if msg.sender == addr { continue; }
                 stream.send(msg.payload.into()).await?;
             }
