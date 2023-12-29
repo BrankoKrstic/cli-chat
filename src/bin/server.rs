@@ -1,5 +1,5 @@
 use futures_util::{SinkExt, StreamExt};
-use rust_chat::codec::ChatFrameCodec;
+use rust_chat::codec::MessagePayloadCodec;
 use rust_chat::message::{Message, MessagePayload};
 use rust_chat::ChatResult;
 use std::net::SocketAddr;
@@ -16,12 +16,12 @@ async fn handle_connection(
     message_sender
         .send(Message::new(addr, MessagePayload::Connected))
         .await?;
-    let mut stream = Framed::new(socket, ChatFrameCodec);
+    let mut stream = Framed::new(socket, MessagePayloadCodec);
     loop {
         tokio::select! {
             msg = stream.next() => {
                 if let Some(Ok(msg)) = msg {
-                    message_sender.send(Message::new(addr, msg.into())).await?;
+                    message_sender.send(Message::new(addr, msg)).await?;
                 }
 
             }
@@ -29,7 +29,7 @@ async fn handle_connection(
                 let msg = msg?;
                 // println!("Message received: {:?}", msg);
                 if msg.sender == addr { continue; }
-                stream.send(msg.payload.into()).await?;
+                stream.send(msg.payload).await?;
             }
 
         }

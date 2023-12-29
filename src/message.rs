@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use crate::codec::{ChatFrame, ChatFrameTag};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
 pub struct Message {
@@ -14,39 +14,11 @@ impl Message {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MessagePayload {
     Connected,
     Disconnect,
+    Signup { email: String, password: String },
+    Login { email: String, password: String },
     Message(String),
-}
-
-impl From<ChatFrame> for MessagePayload {
-    fn from(frame: ChatFrame) -> Self {
-        match frame.tag {
-            ChatFrameTag::Message => MessagePayload::Message(frame.payload),
-            ChatFrameTag::NameChange => todo!(),
-            ChatFrameTag::Connect => MessagePayload::Connected,
-            ChatFrameTag::Disconnect => MessagePayload::Disconnect,
-        }
-    }
-}
-
-impl From<MessagePayload> for ChatFrame {
-    fn from(payload: MessagePayload) -> ChatFrame {
-        match payload {
-            MessagePayload::Connected => ChatFrame {
-                tag: ChatFrameTag::Connect,
-                payload: String::new(),
-            },
-            MessagePayload::Disconnect => ChatFrame {
-                tag: ChatFrameTag::Disconnect,
-                payload: String::new(),
-            },
-            MessagePayload::Message(payload) => ChatFrame {
-                tag: ChatFrameTag::Message,
-                payload,
-            },
-        }
-    }
 }
