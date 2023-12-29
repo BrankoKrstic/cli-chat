@@ -20,13 +20,14 @@ async fn handle_connection(
     loop {
         tokio::select! {
             msg = stream.next() => {
-                if let Ok(msg) = msg.unwrap() {
+                if let Some(Ok(msg)) = msg {
                     message_sender.send(Message::new(addr, msg.into())).await?;
                 }
+
             }
             msg = broadcast_receiver.recv() => {
                 let msg = msg?;
-                println!("Message received: {:?}", msg);
+                // println!("Message received: {:?}", msg);
                 if msg.sender == addr { continue; }
                 stream.send(msg.payload.into()).await?;
             }
