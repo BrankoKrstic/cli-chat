@@ -1,18 +1,19 @@
 use std::time::Instant;
 
 use futures_util::{SinkExt, StreamExt};
-use rust_chat::{codec::MessagePayloadCodec, message::MessagePayload, ChatResult};
+use rust_chat::{codec::ClientCodec, message::ClientMessage, ChatResult};
 use tokio::{net::TcpStream, task::JoinSet};
 use tokio_util::codec::Framed;
 
 async fn handle_connection(count: i32, _idx: i32) -> ChatResult<()> {
-    let s = MessagePayload::Message(String::from("Hello there"));
+    let s = ClientMessage::Message(String::from("Hello there"));
 
     let mut messages_received = 0;
     let messages_max = 10 * (count - 1);
     let mut messages_sent = 0;
     let socket = TcpStream::connect(("127.0.0.1", 8080)).await?;
-    let (mut sink, mut stream) = Framed::new(socket, MessagePayloadCodec).split();
+
+    let (mut sink, mut stream) = Framed::new(socket, ClientCodec).split();
     // tokio::time::sleep(Duration::from_millis((count * 100) as u64)).await;
     loop {
         // println!("process {idx} {messages_received} {messages_sent}");
