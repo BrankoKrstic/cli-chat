@@ -8,6 +8,8 @@ use tokio::net::TcpListener;
 use tokio::sync::{broadcast, mpsc};
 
 // TODO: Save the last few messages and send them to users upon login
+// TODO: Support arguments through clap
+// TODO: Better error handling with anyhow?
 
 #[tokio::main]
 async fn main() -> ChatResult<()> {

@@ -5,7 +5,8 @@ use crate::ChatResult;
 pub struct Auth {
     users: HashMap<String, String>,
 }
-// TODO: prevent user authenticating on two chats at the same time
+
+// TODO: prevent user authenticating on two clients simultaneously
 // TODO: Salt and hash the passwords
 // TODO: Use a database
 
