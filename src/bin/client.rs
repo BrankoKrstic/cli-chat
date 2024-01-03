@@ -14,7 +14,7 @@ async fn main() -> ChatResult<()> {
     let stdin = tokio::io::stdin();
     let mut reader = tokio::io::BufReader::new(stdin);
 
-    let nick = loop {
+    let _nick = loop {
         println!("/login <email> <password> or /signup <email> <password> to continue");
         let mut buf = vec![];
 
@@ -55,20 +55,41 @@ async fn main() -> ChatResult<()> {
         tokio::select! {
           msg = stream.next() => {
             if let Some(msg) = msg {
-              match msg?.payload {
-                  MessagePayload::Nickname { new_nick, nick } => println!("{nick} changed their name to {new_nick}"),
-                  MessagePayload::Message { nick, message } => println!("{nick}: {message}"),
-                  MessagePayload::Connect { nick } => println!("{nick} joined the chat"),
-                  MessagePayload::Disconnect { nick } => println!("{nick} left the chat"),
-                  _ => unreachable!()
-              }
+                print_msg(msg?.payload);
             }
           },
           _ = reader.read_until(b'\n', &mut buf) => {
             buf.pop();
             let payload = String::from_utf8(buf)?;
-            stream.send(ClientMessage::Message(payload)).await?;
+            if let Some(message) = process_message(payload) {
+                stream.send(message).await?;
+            }
           }
         }
+    }
+}
+
+fn print_msg(payload: MessagePayload) {
+    match payload {
+        MessagePayload::Nickname { new_nick, nick } => {
+            println!("{nick} changed their name to {new_nick}")
+        }
+        MessagePayload::Message { nick, message } => println!("{nick}: {message}"),
+        MessagePayload::Connect { nick } => println!("{nick} joined the chat"),
+        MessagePayload::Disconnect { nick } => println!("{nick} left the chat"),
+        _ => unreachable!(),
+    }
+}
+
+fn process_message(payload: String) -> Option<ClientMessage> {
+    if payload.starts_with("/nick ") {
+        if let Some(res) = payload.split_terminator("/nick ").nth(1) {
+            Some(ClientMessage::Nickname(String::from(res)))
+        } else {
+            println!("New nickname cannot be empty");
+            None
+        }
+    } else {
+        Some(ClientMessage::Message(payload))
     }
 }
