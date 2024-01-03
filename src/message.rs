@@ -21,13 +21,14 @@ impl ServerMessage {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MessagePayload {
-    Signup { email: String, password: String },
-    Login { email: String, password: String },
+    Signup { nick: String, password: String },
+    Login { nick: String, password: String },
     SignupAccepted { nick: String },
     LoginAccepted { nick: String },
     LoginFail,
     SignupFail,
     Nickname { new_nick: String, nick: String },
+    NickChangeRefused { msg: String },
     Message { nick: String, message: String },
     Connect { nick: String },
     Disconnect { nick: String },
@@ -35,8 +36,8 @@ pub enum MessagePayload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ClientMessage {
-    Signup { email: String, password: String },
-    Login { email: String, password: String },
+    Signup { nick: String, password: String },
+    Login { nick: String, password: String },
     Nickname(String),
     Message(String),
 }

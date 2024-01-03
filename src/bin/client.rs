@@ -15,7 +15,7 @@ async fn main() -> ChatResult<()> {
     let mut reader = tokio::io::BufReader::new(stdin);
 
     let _nick = loop {
-        println!("/login <email> <password> or /signup <email> <password> to continue");
+        println!("/login <nick> <password> or /signup <nick> <password> to continue");
         let mut buf = vec![];
 
         reader.read_until(b'\n', &mut buf).await?;
@@ -27,12 +27,12 @@ async fn main() -> ChatResult<()> {
         }
         let client_message = if msg[0] == "/login" {
             ClientMessage::Login {
-                email: msg[1].to_owned(),
+                nick: msg[1].to_owned(),
                 password: msg[2].to_owned(),
             }
         } else if msg[0] == "/signup" {
             ClientMessage::Signup {
-                email: msg[1].to_owned(),
+                nick: msg[1].to_owned(),
                 password: msg[2].to_owned(),
             }
         } else {
@@ -77,6 +77,7 @@ fn print_msg(payload: MessagePayload) {
         MessagePayload::Message { nick, message } => println!("{nick}: {message}"),
         MessagePayload::Connect { nick } => println!("{nick} joined the chat"),
         MessagePayload::Disconnect { nick } => println!("{nick} left the chat"),
+        MessagePayload::NickChangeRefused { msg } => println!("{msg}"),
         _ => unreachable!(),
     }
 }

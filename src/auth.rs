@@ -2,51 +2,42 @@ use std::collections::HashMap;
 
 use crate::ChatResult;
 
-pub struct UserData {
-    nick: String,
-    password: String,
+pub struct Auth {
+    users: HashMap<String, String>,
 }
-
-impl UserData {
-    fn new(nick: String, password: String) -> Self {
-        Self { nick, password }
-    }
-}
-
-pub struct Login {
-    users: HashMap<String, UserData>,
-}
-
-impl Login {
+// TODO: prevent user authenticating on two chats at the same time
+impl Auth {
     pub fn new() -> Self {
         Self {
             users: HashMap::new(),
         }
     }
 
-    pub fn signup(&mut self, email: String, password: String) -> ChatResult<String> {
-        if self.users.contains_key(&email) {
-            Err("User with email {email} already exists")?;
+    pub fn signup(&mut self, nick: String, password: String) -> ChatResult<String> {
+        if self.users.contains_key(&nick) {
+            Err("User with nick {nick} already exists")?;
         }
-        self.users
-            .insert(email.clone(), UserData::new(email.clone(), password));
-        Ok(email)
+        self.users.insert(nick.clone(), password);
+        Ok(nick)
     }
-    pub fn login(&mut self, email: String, password: String) -> ChatResult<String> {
-        let user = self.users.get(&email).ok_or("User not found")?;
-        if user.password != password {
+    pub fn login(&mut self, nick: String, password: String) -> ChatResult<String> {
+        let user_password = self.users.get(&nick).ok_or("User not found")?;
+        if user_password != &password {
             Err("Invalid password")?;
         }
-        Ok(user.nick.clone())
-    }
-    pub fn update_nick(&mut self, email: String, nick: String) -> ChatResult<String> {
-        let user = self.users.get_mut(&email).ok_or("User not found")?;
-        user.nick = nick.clone();
         Ok(nick)
+    }
+    pub fn update_nick(&mut self, nick: String, new_nick: String) -> ChatResult<String> {
+        if self.users.contains_key(&new_nick) {
+            Err("Nick taken")?;
+        }
+        let password = self.users.remove(&nick).ok_or("User not found")?;
+        let _ = self.users.insert(new_nick.clone(), password);
+        Ok(new_nick)
     }
 }
 
-impl Default for Login {
+impl Default for Auth {
     fn default() -> Self {
         Self::new()
     }
