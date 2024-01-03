@@ -1,5 +1,6 @@
 use std::error::Error;
 
+pub mod auth;
 pub mod broadcast;
 pub mod codec;
 pub mod connection;
