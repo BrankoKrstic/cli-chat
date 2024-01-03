@@ -7,6 +7,8 @@ use rust_chat::{
 use tokio::{io::AsyncBufReadExt, net::TcpStream};
 use tokio_util::codec::Framed;
 
+// TODO: Add a nicer UI (potentially use ratatui)
+
 #[tokio::main]
 async fn main() -> ChatResult<()> {
     let socket = TcpStream::connect(("127.0.0.1", 8080)).await?;

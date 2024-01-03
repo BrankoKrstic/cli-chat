@@ -6,6 +6,9 @@ pub struct Auth {
     users: HashMap<String, String>,
 }
 // TODO: prevent user authenticating on two chats at the same time
+// TODO: Salt and hash the passwords
+// TODO: Use a database
+
 impl Auth {
     pub fn new() -> Self {
         Self {

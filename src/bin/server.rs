@@ -7,6 +7,8 @@ use rust_chat::ChatResult;
 use tokio::net::TcpListener;
 use tokio::sync::{broadcast, mpsc};
 
+// TODO: Save the last few messages and send them to users upon login
+
 #[tokio::main]
 async fn main() -> ChatResult<()> {
     let addr = "127.0.0.1";
